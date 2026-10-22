@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Browse Tech Jobs | SmartJob Portal{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <!-- Search and Filter Bar -->
+  <div style="background: var(--white); border-radius: var(--radius-lg); padding: 1.5rem; border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm); margin-bottom: 2rem;">
+    <form method="get" action="{% url 'job_list' %}">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label style="font-size: 0.82rem; text-transform: uppercase; color: var(--slate-600); font-weight: 700;">Keywords</label>
+          {{ form.q }}
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label style="font-size: 0.82rem; text-transform: uppercase; color: var(--slate-600); font-weight: 700;">Location</label>
+          {{ form.location }}
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label style="font-size: 0.82rem; text-transform: uppercase; color: var(--slate-600); font-weight: 700;">Category</label>
+          {{ form.category }}
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label style="font-size: 0.82rem; text-transform: uppercase; color: var(--slate-600); font-weight: 700;">Job Type</label>
+          {{ form.job_type }}
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding-top: 1rem; border-top: 1px solid var(--slate-100);">
+        <div style="display: flex; gap: 1rem; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <label style="font-size: 0.85rem; font-weight: 600; color: var(--navy-800);">Experience:</label>
+            {{ form.experience_level }}
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <label style="font-size: 0.85rem; font-weight: 600; color: var(--navy-800);">Sort:</label>
+            {{ form.sort_by }}
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem;">
+          <a href="{% url 'job_list' %}" class="btn btn-outline btn-sm">Reset</a>
+          <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-filter"></i> Apply Filters</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Results Count Header -->
+  <div class="section-header" style="margin-bottom: 1.5rem;">
+    <div>
+      <h1 class="section-title" style="font-size: 1.7rem;">Active Job Vacancies</h1>
+      <p class="section-subtitle">Showing {{ total_results }} openings matching your criteria</p>
+    </div>
+  </div>
+
+  <!-- Job Listings Grid -->
+  <div class="job-grid">
+    {% for job in page_obj %}
+      <div class="job-card">
+        <div class="job-card-header">
+          <div>
+            <h2 class="job-title" style="font-size: 1.2rem;"><a href="{% url 'job_detail' job.id %}">{{ job.job_title }}</a></h2>
+            <div class="company-name"><i class="fa-regular fa-building"></i> {{ job.company_name }}</div>
+          </div>
+          
+          {% if user.is_authenticated and is_seeker %}
+            <a href="{% url 'toggle_save_job' job.id %}" class="btn btn-outline btn-sm" style="padding: 0.4rem 0.6rem; border-radius: var(--radius-full);" title="{% if job.id in saved_job_ids %}Remove from saved{% else %}Save job{% endif %}">
+              <i class="fa-{% if job.id in saved_job_ids %}solid{% else %}regular{% endif %} fa-bookmark" style="color: {% if job.id in saved_job_ids %}var(--teal-600){% else %}var(--slate-400){% endif %};"></i>
+            </a>
+          {% endif %}
+        </div>
+
+        <div class="job-meta-row">
+          <span class="job-meta-item"><i class="fa-solid fa-location-dot"></i> {{ job.location }}</span>
+          <span class="job-meta-item"><i class="fa-solid fa-briefcase"></i> {{ job.get_job_type_display }}</span>
+          <span class="job-meta-item"><i class="fa-solid fa-chart-line"></i> {{ job.get_experience_level_display }}</span>
+          <span class="job-meta-item"><i class="fa-regular fa-calendar-xmark"></i> Deadline: {{ job.application_deadline|date:"M d" }}</span>
+        </div>
+
+        <p style="font-size: 0.88rem; color: var(--slate-600); line-height: 1.5; margin-bottom: 0.85rem;">
+          {{ job.description|truncatewords:22 }}
+        </p>
+
+        <div class="skills-tags">
+          {% for skill in job.get_skills_list|slice:":5" %}
+            <span class="skill-tag">{{ skill }}</span>
+          {% endfor %}
+        </div>
+
+        <div class="job-card-footer">
+          <div class="salary-tag">${{ job.min_salary|floatformat:0 }} - ${{ job.max_salary|floatformat:0 }}</div>
+          
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            {% if job.id in applied_job_ids %}
+              <span class="badge badge-status-shortlisted"><i class="fa-solid fa-check"></i> Applied</span>
+            {% endif %}
+            <a href="{% url 'job_detail' job.id %}" class="btn btn-primary btn-sm">
+              View Details &rarr;
+            </a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="empty-state" style="grid-column: 1 / -1;">
+        <div class="empty-state-icon"><i class="fa-solid fa-search"></i></div>
+        <h3 class="empty-state-title">No Jobs Matched Your Search</h3>
+        <p class="empty-state-desc">Try loosening your keywords, selecting 'All Categories', or clearing location filters.</p>
+        <a href="{% url 'job_list' %}" class="btn btn-primary">Clear All Filters</a>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+    <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 3rem;">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-outline btn-sm">&larr; Previous</a>
+      {% endif %}
+
+      <span style="display: flex; align-items: center; padding: 0 1rem; font-size: 0.9rem; font-weight: 600; color: var(--navy-800);">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+      </span>
+
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-outline btn-sm">Next &rarr;</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

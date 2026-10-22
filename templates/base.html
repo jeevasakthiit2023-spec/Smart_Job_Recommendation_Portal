@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Smart Job Recommendation Portal{% endblock %}</title>
+  <meta name="description" content="Discover top tech jobs tailored to your skills using our intelligent rule-matching recommendation engine.">
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Main Custom CSS -->
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <a href="{% url 'home' %}" class="brand" id="brand-link">
+        <div class="brand-icon">
+          <i class="fa-solid fa-briefcase"></i>
+        </div>
+        Smart<span>Job</span>
+      </a>
+
+      <!-- Desktop & Mobile Links -->
+      <ul class="nav-links" id="navLinks">
+        <li><a href="{% url 'home' %}"><i class="fa-solid fa-house"></i> Home</a></li>
+        <li><a href="{% url 'job_list' %}"><i class="fa-solid fa-magnifying-glass"></i> Browse Jobs</a></li>
+        
+        {% if user.is_authenticated %}
+          {% if is_recruiter %}
+            <li><a href="{% url 'recruiter_dashboard' %}"><i class="fa-solid fa-chart-line"></i> Recruiter Hub</a></li>
+            <li><a href="{% url 'job_create' %}"><i class="fa-solid fa-plus-circle"></i> Post Job</a></li>
+            <li><a href="{% url 'applicants_all' %}"><i class="fa-solid fa-users"></i> Applicants</a></li>
+          {% else %}
+            <li><a href="{% url 'seeker_dashboard' %}"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="{% url 'recommendations' %}"><i class="fa-solid fa-bullseye"></i> Matches</a></li>
+            <li><a href="{% url 'my_applications' %}"><i class="fa-solid fa-paper-plane"></i> Applications</a></li>
+            <li><a href="{% url 'saved_jobs' %}"><i class="fa-solid fa-bookmark"></i> Saved ({{ saved_jobs_count }})</a></li>
+          {% endif %}
+        {% endif %}
+      </ul>
+
+      <!-- Action buttons -->
+      <div class="nav-actions">
+        {% if user.is_authenticated %}
+          <a href="{% url 'profile' %}" class="btn btn-outline-white btn-sm" title="My Profile">
+            <i class="fa-solid fa-user-circle"></i> {{ user.username }}
+          </a>
+          <a href="{% url 'logout' %}" class="btn btn-danger btn-sm" title="Sign Out">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </a>
+        {% else %}
+          <a href="{% url 'login' %}" class="btn btn-outline-white btn-sm">Sign In</a>
+          <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Get Started</a>
+        {% endif %}
+
+        <button class="mobile-toggle" id="mobileMenuToggle" aria-label="Toggle navigation">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Flash Messages -->
+  {% if messages %}
+    <div class="container alert-container">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+          <span>{{ message }}</span>
+          <button class="alert-close" aria-label="Close message">&times;</button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Main Content Block -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="brand">
+            <div class="brand-icon"><i class="fa-solid fa-briefcase"></i></div>
+            Smart<span>Job</span>
+          </div>
+          <p>An intelligent, rule-matching job recommendation portal designed to connect ambitious developers with ideal career opportunities based on verifiable skill alignment.</p>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Job Seekers</h4>
+          <ul class="footer-links">
+            <li><a href="{% url 'job_list' %}">Browse All Openings</a></li>
+            <li><a href="{% url 'recommendations' %}">Smart Match Engine</a></li>
+            <li><a href="{% url 'login' %}">Candidate Login</a></li>
+            <li><a href="{% url 'register' %}">Create Candidate Account</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Recruiters</h4>
+          <ul class="footer-links">
+            <li><a href="{% url 'register' %}">Hire Top Talent</a></li>
+            <li><a href="{% url 'recruiter_dashboard' %}">Recruiter Portal</a></li>
+            <li><a href="{% url 'job_create' %}">Publish a Vacancy</a></li>
+            <li><a href="/admin/">Django Admin</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">System Info</h4>
+          <ul class="footer-links">
+            <li><span>Python 3.11 & Django 5</span></li>
+            <li><span>Rule-Based Weighted Scoring</span></li>
+            <li><span>Pure Vanilla CSS3 & JS</span></li>
+            <li><span>Self-Contained SQLite DB</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 Smart Job Recommendation Portal. Engineered for career discovery.</p>
+        <p>Built with Python &bull; Django &bull; Semantic HTML5 &bull; Custom CSS3</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Main JS -->
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}{{ job.job_title }} at {{ job.company_name }} | SmartJob{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="{% url 'job_list' %}" class="btn btn-outline btn-sm">
+      <i class="fa-solid fa-arrow-left"></i> Back to All Jobs
+    </a>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 2.2fr 1fr; gap: 2rem; align-items: start;">
+    <!-- Main Left Column -->
+    <div>
+      <div style="background: var(--white); border-radius: var(--radius-lg); padding: 2.25rem; border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm); margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+          <div>
+            <span class="badge badge-remote" style="margin-bottom: 0.5rem;">{{ job.get_category_display }}</span>
+            <h1 style="font-size: 2.1rem; font-weight: 800; color: var(--navy-900); line-height: 1.2;">{{ job.job_title }}</h1>
+            <div style="font-size: 1.1rem; color: var(--slate-600); font-weight: 600; margin-top: 0.35rem;">
+              <i class="fa-regular fa-building"></i> {{ job.company_name }} &bull; {{ job.location }}
+            </div>
+          </div>
+
+          {% if match_score is not None %}
+            <div style="text-align: right;">
+              <div class="match-score-badge {% if match_score >= 70 %}score-high{% elif match_score >= 45 %}score-mid{% else %}score-low{% endif %}" style="font-size: 1.05rem; padding: 0.5rem 1.1rem;">
+                <i class="fa-solid fa-bolt"></i> {{ match_score }}% Smart Match
+              </div>
+              <div style="font-size: 0.78rem; color: var(--slate-400); margin-top: 0.25rem;">Rule-matched to your profile</div>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="job-meta-row" style="padding: 1rem; background: var(--slate-50); border-radius: var(--radius-md); border: 1px solid var(--slate-200); margin-bottom: 2rem;">
+          <div style="flex: 1; min-width: 140px;">
+            <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--slate-400); font-weight: 700;">Compensation</div>
+            <div style="font-weight: 700; color: var(--teal-700); font-size: 1.1rem;">${{ job.min_salary|floatformat:0 }} - ${{ job.max_salary|floatformat:0 }}</div>
+          </div>
+          <div style="flex: 1; min-width: 140px;">
+            <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--slate-400); font-weight: 700;">Job Type</div>
+            <div style="font-weight: 700; color: var(--navy-800);">{{ job.get_job_type_display }}</div>
+          </div>
+          <div style="flex: 1; min-width: 140px;">
+            <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--slate-400); font-weight: 700;">Experience Tier</div>
+            <div style="font-weight: 700; color: var(--navy-800);">{{ job.get_experience_level_display }}</div>
+          </div>
+          <div style="flex: 1; min-width: 140px;">
+            <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--slate-400); font-weight: 700;">Deadline</div>
+            <div style="font-weight: 700; color: {% if job.is_expired %}var(--rose){% else %}var(--navy-800){% endif %};">
+              {{ job.application_deadline|date:"M d, Y" }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Role Overview -->
+        <div style="margin-bottom: 2rem;">
+          <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--navy-900); margin-bottom: 0.85rem;">Job Overview</h2>
+          <div style="font-size: 0.96rem; color: var(--navy-800); line-height: 1.7; white-space: pre-line;">
+            {{ job.description }}
+          </div>
+        </div>
+
+        <!-- Required Skills -->
+        <div style="margin-bottom: 2rem;">
+          <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--navy-900); margin-bottom: 0.85rem;">Target Competencies & Skills</h2>
+          <div class="skills-tags">
+            {% for skill in job.get_skills_list %}
+              <span class="skill-tag {% if breakdown and skill|lower in breakdown.matched_skills %}matched{% endif %}" style="font-size: 0.85rem; padding: 0.35rem 0.8rem;">
+                {% if breakdown and skill|lower in breakdown.matched_skills %}
+                  <i class="fa-solid fa-check"></i>
+                {% endif %}
+                {{ skill }}
+              </span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Responsibilities -->
+        <div style="margin-bottom: 2rem;">
+          <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--navy-900); margin-bottom: 0.85rem;">Key Responsibilities</h2>
+          <div style="font-size: 0.96rem; color: var(--navy-800); line-height: 1.7; white-space: pre-line;">
+            {{ job.responsibilities }}
+          </div>
+        </div>
+
+        <!-- Qualifications -->
+        <div style="margin-bottom: 2rem;">
+          <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--navy-900); margin-bottom: 0.85rem;">Qualifications & Requirements</h2>
+          <div style="font-size: 0.96rem; color: var(--navy-800); line-height: 1.7; white-space: pre-line;">
+            {{ job.qualifications }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div>
+      <!-- Action Card -->
+      <div style="background: var(--white); border-radius: var(--radius-lg); padding: 1.75rem; border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm); margin-bottom: 1.5rem; position: sticky; top: 90px;">
+        <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--navy-900); margin-bottom: 1.25rem;">Application Actions</h3>
+
+        {% if job.is_expired %}
+          <div class="alert alert-error" style="margin-bottom: 1rem;">
+            <i class="fa-solid fa-calendar-xmark"></i> Application window closed on {{ job.application_deadline|date:"M d, Y" }}.
+          </div>
+        {% elif not job.is_active %}
+          <div class="alert alert-warning" style="margin-bottom: 1rem;">
+            <i class="fa-solid fa-pause"></i> This listing has been deactivated by the hiring team.
+          </div>
+        {% elif has_applied %}
+          <div class="alert alert-success" style="margin-bottom: 1rem;">
+            <i class="fa-solid fa-circle-check"></i> You have already applied for this opening.
+          </div>
+          <a href="{% url 'my_applications' %}" class="btn btn-navy" style="width: 100%; margin-bottom: 0.75rem;">
+            Track Application Status
+          </a>
+        {% elif user.is_authenticated and is_seeker %}
+          <a href="{% url 'apply_job' job.id %}" class="btn btn-primary btn-lg" style="width: 100%; margin-bottom: 0.75rem;">
+            <i class="fa-solid fa-paper-plane"></i> Apply For Position
+          </a>
+        {% elif not user.is_authenticated %}
+          <a href="{% url 'login' %}?next={% url 'job_detail' job.id %}" class="btn btn-primary btn-lg" style="width: 100%; margin-bottom: 0.75rem;">
+            Sign In to Apply
+          </a>
+        {% endif %}
+
+        {% if user.is_authenticated and is_seeker %}
+          <a href="{% url 'toggle_save_job' job.id %}" class="btn btn-outline" style="width: 100%;">
+            <i class="fa-{% if is_saved %}solid{% else %}regular{% endif %} fa-bookmark"></i>
+            {% if is_saved %}Remove From Saved{% else %}Save For Later{% endif %}
+          </a>
+        {% endif %}
+
+        <!-- Match Breakdown widget if available -->
+        {% if breakdown %}
+          <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--slate-200);">
+            <div style="font-weight: 700; font-size: 0.92rem; color: var(--navy-900); margin-bottom: 0.75rem;">
+              <i class="fa-solid fa-chart-pie" style="color: var(--teal-600);"></i> Recommendation Scoring
+            </div>
+            
+            <div style="font-size: 0.82rem; color: var(--slate-600); display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+              <span>Skills (50% max):</span>
+              <strong>{{ breakdown.skills_score }} pts</strong>
+            </div>
+            <div style="font-size: 0.82rem; color: var(--slate-600); display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+              <span>Role Match (20% max):</span>
+              <strong>{{ breakdown.role_score }} pts</strong>
+            </div>
+            <div style="font-size: 0.82rem; color: var(--slate-600); display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+              <span>Location (15% max):</span>
+              <strong>{{ breakdown.loc_score }} pts</strong>
+            </div>
+            <div style="font-size: 0.82rem; color: var(--slate-600); display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+              <span>Experience (15% max):</span>
+              <strong>{{ breakdown.exp_score }} pts</strong>
+            </div>
+
+            {% if breakdown.reasons %}
+              <div style="background: var(--teal-50); border-radius: var(--radius-sm); padding: 0.75rem; font-size: 0.8rem; color: var(--teal-700);">
+                <strong>Matching Highlights:</strong>
+                <ul style="margin-left: 1rem; margin-top: 0.35rem;">
+                  {% for reason in breakdown.reasons %}
+                    <li>{{ reason }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

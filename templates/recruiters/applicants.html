@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}Applicant Review | SmartJob{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <div class="section-header">
+    <div>
+      <div style="font-size: 0.88rem; font-weight: 700; color: var(--teal-600); text-transform: uppercase; letter-spacing: 0.05em;">
+        Talent Pipeline
+      </div>
+      <h1 class="section-title">
+        {% if selected_job %}Candidates for {{ selected_job.job_title }}{% else %}All Candidate Applications{% endif %}
+      </h1>
+      <p class="section-subtitle">Review resumes, verify credentials, and advance candidates through recruitment stages.</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+      <a href="{% url 'recruiter_dashboard' %}" class="btn btn-outline">
+        <i class="fa-solid fa-arrow-left"></i> Recruiter Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Filter by Job and Status Tabs -->
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+    <!-- Status filters -->
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+      <a href="?{% if selected_job %}job_id={{ selected_job.id }}{% endif %}" class="btn btn-sm {% if current_status == 'All' %}btn-primary{% else %}btn-outline{% endif %}">
+        All Statuses
+      </a>
+      <a href="?status=Pending{% if selected_job %}&job_id={{ selected_job.id }}{% endif %}" class="btn btn-sm {% if current_status == 'Pending' %}btn-primary{% else %}btn-outline{% endif %}">
+        Pending
+      </a>
+      <a href="?status=Shortlisted{% if selected_job %}&job_id={{ selected_job.id }}{% endif %}" class="btn btn-sm {% if current_status == 'Shortlisted' %}btn-primary{% else %}btn-outline{% endif %}">
+        Shortlisted
+      </a>
+      <a href="?status=Selected{% if selected_job %}&job_id={{ selected_job.id }}{% endif %}" class="btn btn-sm {% if current_status == 'Selected' %}btn-primary{% else %}btn-outline{% endif %}">
+        Selected
+      </a>
+      <a href="?status=Rejected{% if selected_job %}&job_id={{ selected_job.id }}{% endif %}" class="btn btn-sm {% if current_status == 'Rejected' %}btn-primary{% else %}btn-outline{% endif %}">
+        Not Selected
+      </a>
+    </div>
+
+    <!-- Job selector dropdown -->
+    {% if recruiter_jobs %}
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <label style="font-size: 0.85rem; font-weight: 600;">Filter by Opening:</label>
+        <select onchange="if (this.value) window.location.href=this.value;" style="padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--slate-300);">
+          <option value="{% url 'applicants_all' %}">All Openings</option>
+          {% for rjob in recruiter_jobs %}
+            <option value="{% url 'applicants_job' rjob.id %}" {% if selected_job and selected_job.id == rjob.id %}selected{% endif %}>
+              {{ rjob.job_title|truncatechars:35 }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Candidates Table -->
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Candidate</th>
+          <th>Role Applied For</th>
+          <th>Experience & Skills</th>
+          <th>Salary Expectation</th>
+          <th>Resume Document</th>
+          <th>Status & Update</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for app in applications %}
+          <tr>
+            <td>
+              <div style="font-weight: 700; color: var(--navy-900); font-size: 1rem;">
+                {{ app.applicant.user_profile.full_name|default:app.applicant.username }}
+              </div>
+              <div style="font-size: 0.82rem; color: var(--slate-600);">
+                <i class="fa-regular fa-envelope"></i> {{ app.applicant.email }}
+              </div>
+              {% if app.applicant.user_profile.phone %}
+                <div style="font-size: 0.82rem; color: var(--slate-600);">
+                  <i class="fa-solid fa-phone"></i> {{ app.applicant.user_profile.phone }}
+                </div>
+              {% endif %}
+              <div style="font-size: 0.75rem; color: var(--slate-400); margin-top: 0.2rem;">
+                Applied: {{ app.applied_at|date:"M d, Y" }}
+              </div>
+            </td>
+
+            <td>
+              <strong><a href="{% url 'job_detail' app.job.id %}">{{ app.job.job_title }}</a></strong>
+            </td>
+
+            <td>
+              <div style="font-size: 0.85rem; font-weight: 600; color: var(--navy-800);">
+                {{ app.applicant.user_profile.experience_level|default:"Not specified" }} ({{ app.applicant.user_profile.years_of_experience|default:"0" }} yrs)
+              </div>
+              <div style="font-size: 0.78rem; color: var(--slate-600); margin-top: 0.2rem; max-width: 250px;">
+                {{ app.applicant.user_profile.skills|truncatechars:60|default:"No skills recorded" }}
+              </div>
+              {% if app.cover_letter %}
+                <details style="margin-top: 0.4rem; font-size: 0.8rem; color: var(--teal-700); cursor: pointer;">
+                  <summary>View Cover Letter</summary>
+                  <p style="margin-top: 0.35rem; color: var(--navy-800); background: var(--slate-50); padding: 0.5rem; border-radius: var(--radius-sm); font-size: 0.8rem; line-height: 1.4;">
+                    {{ app.cover_letter }}
+                  </p>
+                </details>
+              {% endif %}
+            </td>
+
+            <td>
+              {% if app.expected_salary %}
+                <strong style="color: var(--teal-700);">${{ app.expected_salary|floatformat:0 }}</strong>
+              {% else %}
+                <span style="color: var(--slate-400); font-size: 0.85rem;">Negotiable</span>
+              {% endif %}
+            </td>
+
+            <td>
+              {% if app.resume %}
+                <a href="{{ app.resume.url }}" target="_blank" class="btn btn-outline btn-sm" style="color: var(--teal-700); border-color: var(--teal-400);">
+                  <i class="fa-solid fa-file-arrow-down"></i> Download Resume
+                </a>
+              {% else %}
+                <span style="font-size: 0.85rem; color: var(--slate-400);">No file</span>
+              {% endif %}
+            </td>
+
+            <td>
+              <form method="post" action="{% url 'update_applicant_status' app.id %}" style="display: flex; flex-direction: column; gap: 0.4rem;">
+                {% csrf_token %}
+                <select name="status" style="font-size: 0.82rem; padding: 0.35rem 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--slate-300);">
+                  {% for s_val, s_name in status_choices %}
+                    <option value="{{ s_val }}" {% if app.status == s_val %}selected{% endif %}>{{ s_name }}</option>
+                  {% endfor %}
+                </select>
+                <input type="text" name="notes" placeholder="Notes..." value="{{ app.notes }}" style="font-size: 0.78rem; padding: 0.3rem 0.5rem; border: 1px solid var(--slate-200); border-radius: var(--radius-sm);">
+                <button type="submit" class="btn btn-navy btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">Update</button>
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 3rem; color: var(--slate-400);">
+              <div style="font-size: 2rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-user-xmark"></i></div>
+              <div style="font-size: 1.1rem; font-weight: 600; color: var(--navy-800);">No applications found</div>
+              <p style="margin-top: 0.35rem;">No candidates have applied under the chosen status filter.</p>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

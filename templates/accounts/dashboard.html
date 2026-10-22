@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}Job Seeker Dashboard | SmartJob{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <!-- Header with Welcome -->
+  <div class="section-header">
+    <div>
+      <div style="font-size: 0.88rem; font-weight: 700; color: var(--teal-600); text-transform: uppercase; letter-spacing: 0.05em;">
+        Candidate Overview
+      </div>
+      <h1 class="section-title">Welcome, {{ profile.full_name|default:user.username }}!</h1>
+      <p class="section-subtitle">
+        {% if profile.headline %}{{ profile.headline }}{% else %}Track your applications, update skills, and view personalized matches.{% endif %}
+      </p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+      <a href="{% url 'recommendations' %}" class="btn btn-primary">
+        <i class="fa-solid fa-bullseye"></i> View Smart Matches
+      </a>
+      <a href="{% url 'profile' %}" class="btn btn-outline">
+        <i class="fa-solid fa-user-pen"></i> Edit Profile
+      </a>
+    </div>
+  </div>
+
+  <!-- Metric Stat Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-blue"><i class="fa-solid fa-paper-plane"></i></div>
+      <div>
+        <div class="stat-value">{{ total_applied }}</div>
+        <div class="stat-label">Jobs Applied</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-amber"><i class="fa-solid fa-hourglass-half"></i></div>
+      <div>
+        <div class="stat-value">{{ pending_count }}</div>
+        <div class="stat-label">Pending Review</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-teal"><i class="fa-solid fa-award"></i></div>
+      <div>
+        <div class="stat-value">{{ shortlisted_count }}</div>
+        <div class="stat-label">Shortlisted Candidates</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-green"><i class="fa-solid fa-bookmark"></i></div>
+      <div>
+        <div class="stat-value">{{ saved_count }}</div>
+        <div class="stat-label">Saved Vacancies</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Completeness Notice if skills missing -->
+  {% if not profile.skills %}
+    <div class="alert alert-warning" style="margin-bottom: 2rem;">
+      <div>
+        <strong><i class="fa-solid fa-triangle-exclamation"></i> Profile Incomplete:</strong>
+        Add your skills in your profile to unlock accurate recommendation match scores!
+      </div>
+      <a href="{% url 'profile' %}" class="btn btn-sm btn-navy" style="margin-left: 1rem;">Complete Profile</a>
+    </div>
+  {% endif %}
+
+  <!-- Smart Matches Preview -->
+  <div style="margin-bottom: 3rem;">
+    <div class="section-header" style="margin-bottom: 1.5rem;">
+      <div>
+        <h2 style="font-size: 1.45rem; font-weight: 700; color: var(--navy-900);">Top Recommendations For You</h2>
+        <p style="font-size: 0.9rem; color: var(--slate-600);">Ranked by skills (50%), target role (20%), location (15%), and experience level (15%)</p>
+      </div>
+      <a href="{% url 'recommendations' %}" class="btn btn-outline btn-sm">See All Matches &rarr;</a>
+    </div>
+
+    <div class="job-grid">
+      {% for item in recommended_jobs %}
+        <div class="job-card">
+          <div class="job-card-header">
+            <div>
+              <h3 class="job-title"><a href="{% url 'job_detail' item.job.id %}">{{ item.job.job_title }}</a></h3>
+              <div class="company-name"><i class="fa-regular fa-building"></i> {{ item.job.company_name }}</div>
+            </div>
+            <div class="match-score-badge {% if item.score >= 70 %}score-high{% elif item.score >= 45 %}score-mid{% else %}score-low{% endif %}">
+              <i class="fa-solid fa-bolt"></i> {{ item.score }}% Match
+            </div>
+          </div>
+
+          <div class="job-meta-row">
+            <span class="job-meta-item"><i class="fa-solid fa-location-dot"></i> {{ item.job.location }}</span>
+            <span class="job-meta-item"><i class="fa-solid fa-clock"></i> {{ item.job.get_job_type_display }}</span>
+          </div>
+
+          <div class="skills-tags">
+            {% for skill in item.job.get_skills_list|slice:":4" %}
+              <span class="skill-tag {% if skill|lower in item.breakdown.matched_skills %}matched{% endif %}">{{ skill }}</span>
+            {% endfor %}
+          </div>
+
+          {% if item.reasons %}
+            <div style="background: var(--slate-50); border-radius: var(--radius-sm); padding: 0.6rem; font-size: 0.8rem; color: var(--slate-700); margin: 0.5rem 0;">
+              <strong>Why recommended:</strong> {{ item.reasons.0 }}
+            </div>
+          {% endif %}
+
+          <div class="job-card-footer">
+            <div class="salary-tag">${{ item.job.min_salary|floatformat:0 }} - ${{ item.job.max_salary|floatformat:0 }}</div>
+            <a href="{% url 'job_detail' item.job.id %}" class="btn btn-primary btn-sm">View & Apply</a>
+          </div>
+        </div>
+      {% empty %}
+        <div class="empty-state" style="grid-column: 1 / -1; padding: 2.5rem;">
+          <div class="empty-state-icon"><i class="fa-solid fa-bullseye"></i></div>
+          <h3 class="empty-state-title">No Recommendations Available Yet</h3>
+          <p class="empty-state-desc">Update your profile skills, target role, and location to see personalized matches.</p>
+          <a href="{% url 'profile' %}" class="btn btn-primary btn-sm">Update Profile</a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Recent Applications Table -->
+  <div>
+    <div class="section-header" style="margin-bottom: 1.25rem;">
+      <div>
+        <h2 style="font-size: 1.45rem; font-weight: 700; color: var(--navy-900);">Recent Applications</h2>
+        <p style="font-size: 0.9rem; color: var(--slate-600);">Status updates from hiring managers</p>
+      </div>
+      <a href="{% url 'my_applications' %}" class="btn btn-outline btn-sm">View All ({{ total_applied }})</a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Job Vacancy</th>
+            <th>Company</th>
+            <th>Date Applied</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for app in recent_applications %}
+            <tr>
+              <td>
+                <strong><a href="{% url 'job_detail' app.job.id %}">{{ app.job.job_title }}</a></strong>
+                <div style="font-size: 0.8rem; color: var(--slate-400);">{{ app.job.location }}</div>
+              </td>
+              <td>{{ app.job.company_name }}</td>
+              <td>{{ app.applied_at|date:"M d, Y" }}</td>
+              <td>
+                {% if app.status == 'Pending' %}
+                  <span class="badge badge-status-pending"><i class="fa-regular fa-clock"></i> Pending</span>
+                {% elif app.status == 'Shortlisted' %}
+                  <span class="badge badge-status-shortlisted"><i class="fa-solid fa-star"></i> Shortlisted</span>
+                {% elif app.status == 'Selected' %}
+                  <span class="badge badge-status-selected"><i class="fa-solid fa-check-circle"></i> Selected</span>
+                {% else %}
+                  <span class="badge badge-status-rejected"><i class="fa-solid fa-xmark"></i> Not Selected</span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="{% url 'job_detail' app.job.id %}" class="btn btn-outline btn-sm">Job Details</a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="5" style="text-align: center; padding: 2rem; color: var(--slate-400);">
+                You haven't submitted any job applications yet. <a href="{% url 'job_list' %}" style="color: var(--teal-600); font-weight: 600;">Browse active openings &rarr;</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

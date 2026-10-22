@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}403 Forbidden | Smart Job Portal{% endblock %}
+{% block content %}
+<div class="container section">
+  <div class="empty-state" style="max-width: 600px; margin: 3rem auto;">
+    <div class="empty-state-icon" style="color: var(--amber);"><i class="fa-solid fa-shield-halved"></i></div>
+    <h1 class="empty-state-title">403 - Access Forbidden</h1>
+    <p class="empty-state-desc">You do not have permission to access this resource or modify data belonging to another account.</p>
+    <a href="{% url 'home' %}" class="btn btn-primary"><i class="fa-solid fa-house"></i> Return to Safety</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Apply for {{ job.job_title }} | SmartJob{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="{% url 'job_detail' job.id %}" class="btn btn-outline btn-sm">
+      <i class="fa-solid fa-arrow-left"></i> Back to Job Details
+    </a>
+  </div>
+
+  <div class="form-card" style="max-width: 760px; margin: 0 auto;">
+    <div style="border-bottom: 1px solid var(--slate-200); padding-bottom: 1.25rem; margin-bottom: 1.75rem;">
+      <span class="badge badge-remote">{{ job.get_category_display }}</span>
+      <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--navy-900); margin-top: 0.5rem;">
+        Application for {{ job.job_title }}
+      </h1>
+      <div style="font-size: 1rem; color: var(--slate-600); font-weight: 600;">
+        {{ job.company_name }} &bull; {{ job.location }} &bull; Deadline: {{ job.application_deadline|date:"M d, Y" }}
+      </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+
+      <!-- Resume selection / upload -->
+      <div class="form-group" style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: var(--radius-md); padding: 1.25rem;">
+        <label for="id_resume" style="font-weight: 700; color: var(--navy-900); margin-bottom: 0.5rem;">
+          <i class="fa-solid fa-file-pdf" style="color: var(--teal-600);"></i> Candidate Resume (PDF, DOC, DOCX - Max 5MB) *
+        </label>
+        
+        {% if profile.resume %}
+          <div style="background: var(--teal-50); border: 1px solid var(--teal-400); border-radius: var(--radius-sm); padding: 0.75rem; font-size: 0.88rem; color: var(--teal-700); margin-bottom: 0.85rem;">
+            <i class="fa-solid fa-circle-check"></i> <strong>Profile Resume Found:</strong> We can use your profile resume on file automatically, or you can upload a new customized document below.
+          </div>
+        {% endif %}
+
+        {{ form.resume }}
+        {% if form.resume.errors %}
+          <div class="form-errors">{{ form.resume.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="id_expected_salary">Annual Salary Expectation ($ USD)</label>
+        {{ form.expected_salary }}
+        <div class="form-help">Company budget for this position: ${{ job.min_salary|floatformat:0 }} - ${{ job.max_salary|floatformat:0 }}</div>
+        {% if form.expected_salary.errors %}
+          <div class="form-errors">{{ form.expected_salary.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="id_cover_letter">Cover Letter / Candidate Note (Optional)</label>
+        {{ form.cover_letter }}
+        <div class="form-help">Highlight notable projects, GitHub repositories, or relevant technical achievements.</div>
+        {% if form.cover_letter.errors %}
+          <div class="form-errors">{{ form.cover_letter.errors }}</div>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 1rem;">
+        <i class="fa-solid fa-paper-plane"></i> Submit Application to {{ job.company_name }}
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

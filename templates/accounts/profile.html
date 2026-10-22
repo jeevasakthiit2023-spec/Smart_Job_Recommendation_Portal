@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile | Smart Job Portal{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <div class="section-header">
+    <div>
+      <h1 class="section-title">
+        {% if is_recruiter %}Recruiter Company Profile{% else %}Job Seeker Profile & Resume{% endif %}
+      </h1>
+      <p class="section-subtitle">
+        {% if is_recruiter %}
+          Manage your organizational details displayed to engineering candidates.
+        {% else %}
+          Keep your skills, experience, and target preferences updated for accurate matching.
+        {% endif %}
+      </p>
+    </div>
+    <div>
+      <a href="{% url 'dashboard' %}" class="btn btn-outline">
+        <i class="fa-solid fa-arrow-left"></i> Return to Dashboard
+      </a>
+    </div>
+  </div>
+
+  <div class="form-card" style="max-width: 820px; margin: 0 auto;">
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+
+      {% if is_recruiter %}
+        <!-- Recruiter Fields -->
+        <div class="form-group">
+          <label for="id_company_name">Company Name *</label>
+          {{ form.company_name }}
+          {{ form.company_name.errors }}
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label for="id_company_website">Website URL</label>
+            {{ form.company_website }}
+            {{ form.company_website.errors }}
+          </div>
+          <div class="form-group">
+            <label for="id_industry">Industry</label>
+            {{ form.industry }}
+            {{ form.industry.errors }}
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label for="id_location">Headquarters Location</label>
+            {{ form.location }}
+            {{ form.location.errors }}
+          </div>
+          <div class="form-group">
+            <label for="id_contact_number">Contact Phone</label>
+            {{ form.contact_number }}
+            {{ form.contact_number.errors }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="id_company_description">About Company</label>
+          {{ form.company_description }}
+          {{ form.company_description.errors }}
+        </div>
+
+      {% else %}
+        <!-- Job Seeker Fields -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label for="id_full_name">Full Legal Name</label>
+            {{ form.full_name }}
+            {{ form.full_name.errors }}
+          </div>
+          <div class="form-group">
+            <label for="id_phone">Contact Phone</label>
+            {{ form.phone }}
+            {{ form.phone.errors }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="id_headline">Professional Headline</label>
+          {{ form.headline }}
+          <div class="form-help">e.g. Mid-Level Python & Django Engineer | REST APIs & Cloud Architecture</div>
+          {{ form.headline.errors }}
+        </div>
+
+        <div class="form-group">
+          <label for="id_education">Education & Degree</label>
+          {{ form.education }}
+          <div class="form-help">e.g. B.S. in Computer Science - University (2022)</div>
+          {{ form.education.errors }}
+        </div>
+
+        <!-- Skills Input -->
+        <div class="form-group" style="background: var(--teal-50); border: 1px solid var(--teal-400); border-radius: var(--radius-md); padding: 1.25rem;">
+          <label for="id_skills" style="color: var(--teal-700); font-size: 1rem;">
+            <i class="fa-solid fa-bolt"></i> Technical Skills (50% Match Engine Weight)
+          </label>
+          {{ form.skills }}
+          <div class="form-help" style="color: var(--teal-700);">
+            Enter comma-separated skills: e.g. <code>Python, Django, SQL, PostgreSQL, Docker, Git, REST APIs, Linux</code>
+          </div>
+          {{ form.skills.errors }}
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label for="id_experience_level">Experience Tier (15% Weight)</label>
+            {{ form.experience_level }}
+            {{ form.experience_level.errors }}
+          </div>
+          <div class="form-group">
+            <label for="id_years_of_experience">Years of Experience</label>
+            {{ form.years_of_experience }}
+            {{ form.years_of_experience.errors }}
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label for="id_preferred_job_role">Target Role / Title (20% Weight)</label>
+            {{ form.preferred_job_role }}
+            <div class="form-help">e.g. Python Developer, Full Stack Engineer</div>
+            {{ form.preferred_job_role.errors }}
+          </div>
+          <div class="form-group">
+            <label for="id_preferred_location">Preferred Location (15% Weight)</label>
+            {{ form.preferred_location }}
+            <div class="form-help">e.g. Remote, San Francisco, New York</div>
+            {{ form.preferred_location.errors }}
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label for="id_preferred_job_type">Preferred Job Type</label>
+            {{ form.preferred_job_type }}
+            {{ form.preferred_job_type.errors }}
+          </div>
+          <div class="form-group">
+            <label for="id_expected_salary">Annual Expected Salary ($ USD)</label>
+            {{ form.expected_salary }}
+            {{ form.expected_salary.errors }}
+          </div>
+        </div>
+
+        <!-- Resume Upload -->
+        <div class="form-group" style="border: 2px dashed var(--slate-300); border-radius: var(--radius-md); padding: 1.5rem; text-align: center;">
+          <div style="font-size: 2rem; color: var(--teal-600); margin-bottom: 0.5rem;">
+            <i class="fa-solid fa-file-arrow-up"></i>
+          </div>
+          <label for="id_resume" style="font-size: 1rem; color: var(--navy-900);">Resume Document (PDF, DOC, DOCX - max 5MB)</label>
+          <div style="margin: 0.8rem 0;">
+            {{ form.resume }}
+          </div>
+          {% if profile.resume %}
+            <div style="font-size: 0.85rem; color: var(--teal-700); margin-top: 0.5rem;">
+              <i class="fa-solid fa-circle-check"></i> Current Resume: 
+              <a href="{{ profile.resume.url }}" target="_blank" style="text-decoration: underline; font-weight: 600;">Download Active File</a>
+            </div>
+          {% endif %}
+          {{ form.resume.errors }}
+        </div>
+
+        <div class="form-group">
+          <label for="id_bio">Professional Summary / Bio</label>
+          {{ form.bio }}
+          {{ form.bio.errors }}
+        </div>
+      {% endif %}
+
+      <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 1.5rem;">
+        <i class="fa-solid fa-floppy-disk"></i> Save Profile Details
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

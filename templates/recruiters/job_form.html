@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}{% if is_edit %}Edit Job Opening{% else %}Post New Job Opening{% endif %} | SmartJob{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="{% url 'recruiter_dashboard' %}" class="btn btn-outline btn-sm">
+      <i class="fa-solid fa-arrow-left"></i> Back to Recruiter Dashboard
+    </a>
+  </div>
+
+  <div class="form-card" style="max-width: 820px; margin: 0 auto;">
+    <div style="border-bottom: 1px solid var(--slate-200); padding-bottom: 1.25rem; margin-bottom: 1.75rem;">
+      <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--navy-900);">
+        {% if is_edit %}Edit Job Opening: {{ job.job_title }}{% else %}Publish New Engineering Vacancy{% endif %}
+      </h1>
+      <p style="color: var(--slate-600); font-size: 0.95rem;">
+        Fill out the role requirements. Candidates will be matched based on skills, location, and experience.
+      </p>
+    </div>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="id_job_title">Job Title *</label>
+        {{ form.job_title }}
+        {% if form.job_title.errors %}<div class="form-errors">{{ form.job_title.errors }}</div>{% endif %}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label for="id_company_name">Company Name *</label>
+          {{ form.company_name }}
+          {% if form.company_name.errors %}<div class="form-errors">{{ form.company_name.errors }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label for="id_category">Engineering Domain / Category *</label>
+          {{ form.category }}
+          {% if form.category.errors %}<div class="form-errors">{{ form.category.errors }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label for="id_job_type">Employment Type</label>
+          {{ form.job_type }}
+        </div>
+        <div class="form-group">
+          <label for="id_experience_level">Required Experience Tier</label>
+          {{ form.experience_level }}
+        </div>
+        <div class="form-group">
+          <label for="id_application_deadline">Application Deadline *</label>
+          {{ form.application_deadline }}
+          {% if form.application_deadline.errors %}<div class="form-errors">{{ form.application_deadline.errors }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; align-items: center;">
+        <div class="form-group">
+          <label for="id_location">Location (City, State / Remote) *</label>
+          {{ form.location }}
+          {% if form.location.errors %}<div class="form-errors">{{ form.location.errors }}</div>{% endif %}
+        </div>
+        <div class="form-group" style="padding-top: 1.5rem;">
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+            {{ form.is_remote }} Fully Remote Position
+          </label>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label for="id_min_salary">Minimum Annual Salary ($ USD) *</label>
+          {{ form.min_salary }}
+          {% if form.min_salary.errors %}<div class="form-errors">{{ form.min_salary.errors }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label for="id_max_salary">Maximum Annual Salary ($ USD) *</label>
+          {{ form.max_salary }}
+          {% if form.max_salary.errors %}<div class="form-errors">{{ form.max_salary.errors }}</div>{% endif %}
+        </div>
+      </div>
+
+      <!-- Skills Requirements -->
+      <div class="form-group" style="background: var(--teal-50); border: 1px solid var(--teal-400); border-radius: var(--radius-md); padding: 1.25rem;">
+        <label for="id_required_skills" style="color: var(--teal-700); font-weight: 700;">
+          <i class="fa-solid fa-bolt"></i> Required Skills (50% Match Weight) *
+        </label>
+        {{ form.required_skills }}
+        <div class="form-help" style="color: var(--teal-700);">
+          Enter comma-separated competencies: e.g. <code>Python, Django, PostgreSQL, Docker, Git, REST APIs</code>
+        </div>
+        {% if form.required_skills.errors %}<div class="form-errors">{{ form.required_skills.errors }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="id_description">Job Summary & Team Mission *</label>
+        {{ form.description }}
+        {% if form.description.errors %}<div class="form-errors">{{ form.description.errors }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="id_responsibilities">Key Responsibilities *</label>
+        {{ form.responsibilities }}
+        {% if form.responsibilities.errors %}<div class="form-errors">{{ form.responsibilities.errors }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="id_qualifications">Qualifications & Requirements *</label>
+        {{ form.qualifications }}
+        {% if form.qualifications.errors %}<div class="form-errors">{{ form.qualifications.errors }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          {{ form.is_active }} Active & Accepting Submissions
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 1rem;">
+        <i class="fa-solid fa-check"></i> {% if is_edit %}Save Changes{% else %}Publish Vacancy{% endif %}
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Smart Job Recommendations | SmartJob{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <div class="section-header">
+    <div>
+      <div style="font-size: 0.88rem; font-weight: 700; color: var(--teal-600); text-transform: uppercase; letter-spacing: 0.05em;">
+        Algorithmic Career Matching
+      </div>
+      <h1 class="section-title">Your Tailored Recommendations</h1>
+      <p class="section-subtitle">
+        Calculated using a transparent rule-matching model: Skills (50%), Target Role (20%), Location (15%), and Experience (15%).
+      </p>
+    </div>
+    <div>
+      <a href="{% url 'profile' %}" class="btn btn-outline">
+        <i class="fa-solid fa-sliders"></i> Refine Skills Profile
+      </a>
+    </div>
+  </div>
+
+  <!-- Mandatory Scientific Disclaimer Note -->
+  <div class="alert alert-info" style="margin-bottom: 2rem;">
+    <div>
+      <strong><i class="fa-solid fa-circle-info"></i> How to Read Match Scores:</strong>
+      The percentage shown on each card is a quantitative skill-and-preference matching indicator based on your profile inputs. It is designed to guide your job discovery and does not guarantee an interview or employment selection.
+    </div>
+  </div>
+
+  <!-- Match Score Filter Tabs -->
+  <div style="display: flex; gap: 0.75rem; margin-bottom: 2rem; flex-wrap: wrap;">
+    <a href="{% url 'recommendations' %}" class="btn btn-sm {% if not request.GET.min_score %}btn-primary{% else %}btn-outline{% endif %}">
+      All Recommendations ({{ total_recommendations }})
+    </a>
+    <a href="{% url 'recommendations' %}?min_score=70" class="btn btn-sm {% if request.GET.min_score == '70' %}btn-primary{% else %}btn-outline{% endif %}">
+      High Match (&ge; 70%)
+    </a>
+    <a href="{% url 'recommendations' %}?min_score=50" class="btn btn-sm {% if request.GET.min_score == '50' %}btn-primary{% else %}btn-outline{% endif %}">
+      Moderate Match (&ge; 50%)
+    </a>
+  </div>
+
+  <!-- Recommendations Grid -->
+  <div class="job-grid">
+    {% for item in recommended_jobs %}
+      <div class="job-card">
+        <div class="job-card-header">
+          <div>
+            <h2 class="job-title" style="font-size: 1.2rem;"><a href="{% url 'job_detail' item.job.id %}">{{ item.job.job_title }}</a></h2>
+            <div class="company-name"><i class="fa-regular fa-building"></i> {{ item.job.company_name }}</div>
+          </div>
+          
+          <div class="match-score-badge {% if item.score >= 70 %}score-high{% elif item.score >= 45 %}score-mid{% else %}score-low{% endif %}">
+            <i class="fa-solid fa-bolt"></i> {{ item.score }}% Match
+          </div>
+        </div>
+
+        <div class="job-meta-row">
+          <span class="job-meta-item"><i class="fa-solid fa-location-dot"></i> {{ item.job.location }}</span>
+          <span class="job-meta-item"><i class="fa-solid fa-briefcase"></i> {{ item.job.get_job_type_display }}</span>
+          <span class="job-meta-item"><i class="fa-solid fa-chart-line"></i> {{ item.job.get_experience_level_display }}</span>
+        </div>
+
+        <!-- Skills match badges -->
+        <div class="skills-tags">
+          {% for skill in item.job.get_skills_list %}
+            <span class="skill-tag {% if skill|lower in item.breakdown.matched_skills %}matched{% endif %}">
+              {% if skill|lower in item.breakdown.matched_skills %}&#10003; {% endif %}{{ skill }}
+            </span>
+          {% endfor %}
+        </div>
+
+        <!-- Matching explanation cards -->
+        {% if item.reasons %}
+          <div style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: var(--radius-sm); padding: 0.75rem; margin: 0.75rem 0; font-size: 0.82rem;">
+            <div style="font-weight: 700; color: var(--navy-900); margin-bottom: 0.35rem;">Why this matches:</div>
+            <ul style="margin-left: 1.1rem; color: var(--slate-700); line-height: 1.4;">
+              {% for reason in item.reasons %}
+                <li>{{ reason }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        <div class="job-card-footer">
+          <div class="salary-tag">${{ item.job.min_salary|floatformat:0 }} - ${{ item.job.max_salary|floatformat:0 }}</div>
+          <div style="display: flex; gap: 0.5rem;">
+            <a href="{% url 'toggle_save_job' item.job.id %}" class="btn btn-outline btn-sm" title="Save Job">
+              <i class="fa-{% if item.job.id in saved_job_ids %}solid{% else %}regular{% endif %} fa-bookmark"></i>
+            </a>
+            <a href="{% url 'job_detail' item.job.id %}" class="btn btn-primary btn-sm">
+              Review & Apply
+            </a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="empty-state" style="grid-column: 1 / -1;">
+        <div class="empty-state-icon"><i class="fa-solid fa-crosshairs"></i></div>
+        <h3 class="empty-state-title">No Recommendations Available</h3>
+        <p class="empty-state-desc">
+          Ensure you have populated skills in your profile. You may also adjust your minimum match filter.
+        </p>
+        <a href="{% url 'profile' %}" class="btn btn-primary">Update Profile Skills</a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

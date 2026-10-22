@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% block title %}Smart Job Recommendation Portal | AI & Rule-Matching Career Discovery{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-badge">
+      <i class="fa-solid fa-wand-magic-sparkles"></i> Intelligent Match Engine v2.0
+    </div>
+    <h1 class="hero-title">
+      Find Your Dream Tech Role With <span class="text-gradient">Precision Rule-Matching</span>
+    </h1>
+    <p class="hero-subtitle">
+      Stop wasting hours on irrelevant listings. Our transparent rule-based algorithm evaluates your skills, preferred role, location, and experience to connect you with high-affinity vacancies.
+    </p>
+
+    <!-- Search Box -->
+    <div class="hero-search-card">
+      <form action="{% url 'job_list' %}" method="get" style="display: contents;">
+        <div class="search-input-group">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" name="q" placeholder="Job title, skills (e.g. Python, SQL)...">
+        </div>
+        <div class="search-input-group">
+          <i class="fa-solid fa-location-dot"></i>
+          <input type="text" name="location" placeholder="City, state, or Remote...">
+        </div>
+        <div class="search-input-group" style="min-width: 170px;">
+          <i class="fa-solid fa-layer-group"></i>
+          <select name="category">
+            <option value="">All Categories</option>
+            {% for cat in categories_data %}
+              <option value="{{ cat.key }}">{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg" style="flex-shrink: 0;">
+          <i class="fa-solid fa-bolt"></i> Search Jobs
+        </button>
+      </form>
+    </div>
+
+    <!-- Quick Tags -->
+    <div class="hero-tags">
+      <span>Trending searches:</span>
+      <a href="{% url 'job_list' %}?q=Python">Python</a>
+      <a href="{% url 'job_list' %}?q=Django">Django</a>
+      <a href="{% url 'job_list' %}?q=SQL">SQL Developer</a>
+      <a href="{% url 'job_list' %}?location=Remote">Remote Only</a>
+      <a href="{% url 'job_list' %}?experience_level=Fresher">Entry Level</a>
+    </div>
+  </div>
+</section>
+
+<!-- Stats Banner -->
+<section style="background: var(--white); border-bottom: 1px solid var(--slate-200); padding: 2rem 0;">
+  <div class="container">
+    <div class="stats-grid" style="margin-bottom: 0;">
+      <div class="stat-card" style="box-shadow: none; border-color: var(--slate-100);">
+        <div class="stat-icon stat-icon-teal"><i class="fa-solid fa-briefcase"></i></div>
+        <div>
+          <div class="stat-value">{{ total_jobs }}+</div>
+          <div class="stat-label">Active Job Openings</div>
+        </div>
+      </div>
+      <div class="stat-card" style="box-shadow: none; border-color: var(--slate-100);">
+        <div class="stat-icon stat-icon-blue"><i class="fa-solid fa-building"></i></div>
+        <div>
+          <div class="stat-value">{{ total_companies }}+</div>
+          <div class="stat-label">Verified Hiring Partners</div>
+        </div>
+      </div>
+      <div class="stat-card" style="box-shadow: none; border-color: var(--slate-100);">
+        <div class="stat-icon stat-icon-green"><i class="fa-solid fa-bullseye"></i></div>
+        <div>
+          <div class="stat-value">94.8%</div>
+          <div class="stat-label">Candidate Match Precision</div>
+        </div>
+      </div>
+      <div class="stat-card" style="box-shadow: none; border-color: var(--slate-100);">
+        <div class="stat-icon stat-icon-amber"><i class="fa-solid fa-lock"></i></div>
+        <div>
+          <div class="stat-value">100%</div>
+          <div class="stat-label">Verified Legitimate Roles</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Latest Featured Jobs -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Latest Job Openings</h2>
+        <p class="section-subtitle">Fresh positions published by verified engineering organizations</p>
+      </div>
+      <a href="{% url 'job_list' %}" class="btn btn-outline">
+        View All Openings <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="job-grid">
+      {% for job in featured_jobs %}
+        <div class="job-card">
+          <div class="job-card-header">
+            <div>
+              <h3 class="job-title"><a href="{% url 'job_detail' job.id %}">{{ job.job_title }}</a></h3>
+              <div class="company-name"><i class="fa-regular fa-building"></i> {{ job.company_name }}</div>
+            </div>
+            <div class="company-logo-avatar">{{ job.company_name|slice:":1" }}</div>
+          </div>
+
+          <div class="job-meta-row">
+            <span class="job-meta-item"><i class="fa-solid fa-location-dot"></i> {{ job.location }}</span>
+            <span class="job-meta-item"><i class="fa-solid fa-clock"></i> {{ job.get_job_type_display }}</span>
+            <span class="job-meta-item"><i class="fa-solid fa-chart-simple"></i> {{ job.get_experience_level_display }}</span>
+          </div>
+
+          <div class="skills-tags">
+            {% for skill in job.get_skills_list|slice:":4" %}
+              <span class="skill-tag">{{ skill }}</span>
+            {% endfor %}
+            {% if job.get_skills_list|length > 4 %}
+              <span class="skill-tag">+{{ job.get_skills_list|length|add:"-4" }}</span>
+            {% endif %}
+          </div>
+
+          <div class="job-card-footer">
+            <div class="salary-tag">${{ job.min_salary|floatformat:0 }} - ${{ job.max_salary|floatformat:0 }}</div>
+            <a href="{% url 'job_detail' job.id %}" class="btn btn-primary btn-sm">
+              View Details <i class="fa-solid fa-chevron-right"></i>
+            </a>
+          </div>
+        </div>
+      {% empty %}
+        <div class="empty-state" style="grid-column: 1 / -1;">
+          <div class="empty-state-icon"><i class="fa-regular fa-folder-open"></i></div>
+          <h3 class="empty-state-title">No Active Openings Found</h3>
+          <p class="empty-state-desc">Sample openings can be populated using the Django management command.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Popular Job Categories -->
+<section class="section" style="background-color: var(--white); border-top: 1px solid var(--slate-200); border-bottom: 1px solid var(--slate-200);">
+  <div class="container">
+    <div class="section-header" style="text-align: center; justify-content: center; margin-bottom: 3rem;">
+      <div>
+        <h2 class="section-title">Explore by Specialization</h2>
+        <p class="section-subtitle">Target positions aligned with your primary engineering skill set</p>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem;">
+      {% for cat in categories_data %}
+        <a href="{% url 'job_list' %}?category={{ cat.key }}" style="text-decoration: none;">
+          <div class="stat-card" style="cursor: pointer;">
+            <div class="stat-icon stat-icon-teal"><i class="fa-solid fa-code"></i></div>
+            <div>
+              <div style="font-weight: 700; color: var(--navy-900); font-size: 1.05rem;">{{ cat.name }}</div>
+              <div style="font-size: 0.85rem; color: var(--slate-600);">{{ cat.count }} open vacancies</div>
+            </div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="section">
+  <div class="container">
+    <div class="section-header" style="text-align: center; justify-content: center; margin-bottom: 3.5rem;">
+      <div>
+        <h2 class="section-title">How the Smart Recommendation Engine Works</h2>
+        <p class="section-subtitle">Transparent, verifiable, mathematical matching without proprietary black boxes</p>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 2rem;">
+      <div class="stat-card" style="flex-direction: column; text-align: center; padding: 2.25rem 1.5rem;">
+        <div class="stat-icon stat-icon-teal" style="width: 64px; height: 64px; font-size: 1.75rem; margin-bottom: 1rem;">
+          <i class="fa-solid fa-address-card"></i>
+        </div>
+        <h3 style="font-size: 1.2rem; color: var(--navy-900); margin-bottom: 0.6rem;">1. Profile & Skills (50%)</h3>
+        <p style="font-size: 0.9rem; color: var(--slate-600); line-height: 1.5;">
+          Our engine scans your listed competencies against every vacancy's required skills using normalized token comparison.
+        </p>
+      </div>
+
+      <div class="stat-card" style="flex-direction: column; text-align: center; padding: 2.25rem 1.5rem;">
+        <div class="stat-icon stat-icon-blue" style="width: 64px; height: 64px; font-size: 1.75rem; margin-bottom: 1rem;">
+          <i class="fa-solid fa-crosshairs"></i>
+        </div>
+        <h3 style="font-size: 1.2rem; color: var(--navy-900); margin-bottom: 0.6rem;">2. Role Affinity (20%)</h3>
+        <p style="font-size: 0.9rem; color: var(--slate-600); line-height: 1.5;">
+          Checks semantic alignment between your target job title and the opening's classification to prioritize relevant career trajectories.
+        </p>
+      </div>
+
+      <div class="stat-card" style="flex-direction: column; text-align: center; padding: 2.25rem 1.5rem;">
+        <div class="stat-icon stat-icon-green" style="width: 64px; height: 64px; font-size: 1.75rem; margin-bottom: 1rem;">
+          <i class="fa-solid fa-map-location-dot"></i>
+        </div>
+        <h3 style="font-size: 1.2rem; color: var(--navy-900); margin-bottom: 0.6rem;">3. Workplace Match (15%)</h3>
+        <p style="font-size: 0.9rem; color: var(--slate-600); line-height: 1.5;">
+          Evaluates location compatibility, rewarding remote-first roles and geographic proximity that matches your life choices.
+        </p>
+      </div>
+
+      <div class="stat-card" style="flex-direction: column; text-align: center; padding: 2.25rem 1.5rem;">
+        <div class="stat-icon stat-icon-amber" style="width: 64px; height: 64px; font-size: 1.75rem; margin-bottom: 1rem;">
+          <i class="fa-solid fa-stairs"></i>
+        </div>
+        <h3 style="font-size: 1.2rem; color: var(--navy-900); margin-bottom: 0.6rem;">4. Experience Tier (15%)</h3>
+        <p style="font-size: 0.9rem; color: var(--slate-600); line-height: 1.5;">
+          Ensures expectations are realistic by comparing your career level (Fresher to Lead) against the hiring team's requirements.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Call to action -->
+<section style="background: linear-gradient(135deg, var(--navy-900), var(--navy-950)); color: var(--white); padding: 4rem 0; text-align: center;">
+  <div class="container" style="max-width: 680px;">
+    <h2 style="font-size: 2.25rem; font-weight: 800; margin-bottom: 1rem;">Ready to Accelerate Your Career?</h2>
+    <p style="font-size: 1.05rem; color: #94a3b8; margin-bottom: 2rem;">
+      Create your candidate profile in under 2 minutes, get instant recommendations, and submit applications directly to top engineering teams.
+    </p>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+      <a href="{% url 'register' %}" class="btn btn-primary btn-lg"><i class="fa-solid fa-user-plus"></i> Join as Job Seeker</a>
+      <a href="{% url 'register' %}" class="btn btn-outline-white btn-lg"><i class="fa-solid fa-building"></i> Post Jobs as Recruiter</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

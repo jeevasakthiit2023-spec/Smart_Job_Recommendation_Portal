@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Recruiter Dashboard | SmartJob Portal{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <div class="section-header">
+    <div>
+      <div style="font-size: 0.88rem; font-weight: 700; color: var(--teal-600); text-transform: uppercase; letter-spacing: 0.05em;">
+        Talent Acquisition Portal
+      </div>
+      <h1 class="section-title">{{ profile.company_name }} &bull; Recruitment Hub</h1>
+      <p class="section-subtitle">Manage engineering vacancies, review applicant pipelines, and advance qualified talent.</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+      <a href="{% url 'job_create' %}" class="btn btn-primary">
+        <i class="fa-solid fa-plus-circle"></i> Create Job Posting
+      </a>
+      <a href="{% url 'profile' %}" class="btn btn-outline">
+        <i class="fa-solid fa-building"></i> Company Profile
+      </a>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-blue"><i class="fa-solid fa-list-check"></i></div>
+      <div>
+        <div class="stat-value">{{ total_jobs }}</div>
+        <div class="stat-label">Total Jobs Posted</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-green"><i class="fa-solid fa-briefcase"></i></div>
+      <div>
+        <div class="stat-value">{{ active_jobs }}</div>
+        <div class="stat-label">Active Vacancies</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-teal"><i class="fa-solid fa-users"></i></div>
+      <div>
+        <div class="stat-value">{{ total_applicants }}</div>
+        <div class="stat-label">Total Candidate Submissions</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-amber"><i class="fa-solid fa-star"></i></div>
+      <div>
+        <div class="stat-value">{{ shortlisted_applicants }}</div>
+        <div class="stat-label">Shortlisted Candidates</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recruiter's Job Postings Table -->
+  <div style="margin-top: 2rem;">
+    <div class="section-header" style="margin-bottom: 1.25rem;">
+      <div>
+        <h2 style="font-size: 1.45rem; font-weight: 700; color: var(--navy-900);">Your Job Openings</h2>
+        <p style="font-size: 0.9rem; color: var(--slate-600);">Monitor applications and vacancy lifecycle</p>
+      </div>
+      <a href="{% url 'applicants_all' %}" class="btn btn-outline btn-sm">
+        <i class="fa-solid fa-users"></i> View All Candidates ({{ total_applicants }})
+      </a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Job Vacancy</th>
+            <th>Category / Type</th>
+            <th>Deadline</th>
+            <th>Status</th>
+            <th>Applicants</th>
+            <th>Management Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for job in my_jobs %}
+            <tr>
+              <td>
+                <strong><a href="{% url 'job_detail' job.id %}">{{ job.job_title }}</a></strong>
+                <div style="font-size: 0.8rem; color: var(--slate-400);">{{ job.location }} &bull; ${{ job.min_salary|floatformat:0 }} - ${{ job.max_salary|floatformat:0 }}</div>
+              </td>
+              <td>
+                <div>{{ job.get_category_display }}</div>
+                <div style="font-size: 0.8rem; color: var(--slate-400);">{{ job.get_job_type_display }} &bull; {{ job.get_experience_level_display }}</div>
+              </td>
+              <td>
+                <span {% if job.is_expired %}style="color: var(--rose); font-weight: 600;"{% endif %}>
+                  {{ job.application_deadline|date:"M d, Y" }}
+                </span>
+              </td>
+              <td>
+                {% if job.is_active and not job.is_expired %}
+                  <span class="badge badge-status-selected">Active</span>
+                {% elif job.is_expired %}
+                  <span class="badge badge-status-rejected">Expired</span>
+                {% else %}
+                  <span class="badge badge-status-pending">Inactive</span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="{% url 'applicants_job' job.id %}" class="btn btn-outline btn-sm" style="font-weight: 700;">
+                  <i class="fa-solid fa-users"></i> {{ job.app_count }} Candidates
+                </a>
+              </td>
+              <td>
+                <div style="display: flex; gap: 0.4rem;">
+                  <a href="{% url 'job_edit' job.id %}" class="btn btn-outline btn-sm" title="Edit Job Details">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </a>
+                  <a href="{% url 'job_toggle_status' job.id %}" class="btn btn-outline btn-sm" title="Toggle Active / Pause">
+                    <i class="fa-solid fa-power-off"></i>
+                  </a>
+                  <a href="{% url 'job_delete' job.id %}" class="btn btn-danger btn-sm" title="Delete Job Posting">
+                    <i class="fa-solid fa-trash"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" style="text-align: center; padding: 3rem; color: var(--slate-400);">
+                <div style="font-size: 2rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-folder-plus"></i></div>
+                <div style="font-size: 1.1rem; font-weight: 600; color: var(--navy-800);">No jobs posted yet</div>
+                <p style="margin: 0.5rem 0 1.25rem;">Publish your first engineering vacancy to start receiving algorithmic candidate matches.</p>
+                <a href="{% url 'job_create' %}" class="btn btn-primary"><i class="fa-solid fa-plus-circle"></i> Create Job Posting</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

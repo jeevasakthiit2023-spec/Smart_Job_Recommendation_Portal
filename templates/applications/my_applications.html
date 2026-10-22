@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}My Job Applications | SmartJob{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <div class="section-header">
+    <div>
+      <h1 class="section-title">My Submitted Applications</h1>
+      <p class="section-subtitle">Real-time status updates from verified hiring teams</p>
+    </div>
+    <a href="{% url 'job_list' %}" class="btn btn-outline">
+      <i class="fa-solid fa-magnifying-glass"></i> Find More Jobs
+    </a>
+  </div>
+
+  <!-- Metric Badges -->
+  <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+    <div class="stat-card" style="padding: 1rem 1.25rem; flex: 1; min-width: 180px;">
+      <div>
+        <div class="stat-value" style="font-size: 1.4rem;">{{ total }}</div>
+        <div class="stat-label">Total Applied</div>
+      </div>
+    </div>
+    <div class="stat-card" style="padding: 1rem 1.25rem; flex: 1; min-width: 180px;">
+      <div>
+        <div class="stat-value" style="font-size: 1.4rem; color: var(--amber);">{{ pending }}</div>
+        <div class="stat-label">Pending Review</div>
+      </div>
+    </div>
+    <div class="stat-card" style="padding: 1rem 1.25rem; flex: 1; min-width: 180px;">
+      <div>
+        <div class="stat-value" style="font-size: 1.4rem; color: #6d28d9;">{{ shortlisted }}</div>
+        <div class="stat-label">Shortlisted</div>
+      </div>
+    </div>
+    <div class="stat-card" style="padding: 1rem 1.25rem; flex: 1; min-width: 180px;">
+      <div>
+        <div class="stat-value" style="font-size: 1.4rem; color: var(--emerald);">{{ selected }}</div>
+        <div class="stat-label">Selected / Hired</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Target Role</th>
+          <th>Hiring Organization</th>
+          <th>Date Submitted</th>
+          <th>Application Status</th>
+          <th>Recruiter Notes</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for app in applications %}
+          <tr>
+            <td>
+              <strong><a href="{% url 'job_detail' app.job.id %}">{{ app.job.job_title }}</a></strong>
+              <div style="font-size: 0.8rem; color: var(--slate-400);">{{ app.job.location }} &bull; ${{ app.job.min_salary|floatformat:0 }} - ${{ app.job.max_salary|floatformat:0 }}</div>
+            </td>
+            <td>
+              <div style="font-weight: 600;">{{ app.job.company_name }}</div>
+            </td>
+            <td>{{ app.applied_at|date:"M d, Y" }}</td>
+            <td>
+              {% if app.status == 'Pending' %}
+                <span class="badge badge-status-pending"><i class="fa-regular fa-clock"></i> Pending</span>
+              {% elif app.status == 'Shortlisted' %}
+                <span class="badge badge-status-shortlisted"><i class="fa-solid fa-star"></i> Shortlisted</span>
+              {% elif app.status == 'Selected' %}
+                <span class="badge badge-status-selected"><i class="fa-solid fa-check-circle"></i> Selected / Hired</span>
+              {% else %}
+                <span class="badge badge-status-rejected"><i class="fa-solid fa-xmark"></i> Not Selected</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if app.notes %}
+                <span style="font-size: 0.85rem; color: var(--navy-800);">{{ app.notes }}</span>
+              {% else %}
+                <span style="font-size: 0.85rem; color: var(--slate-400);">&mdash;</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'job_detail' app.job.id %}" class="btn btn-outline btn-sm">View Vacancy</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 3rem; color: var(--slate-400);">
+              <div style="font-size: 2rem; margin-bottom: 0.5rem;"><i class="fa-regular fa-paper-plane"></i></div>
+              <div style="font-size: 1.1rem; font-weight: 600; color: var(--navy-800);">No applications submitted yet</div>
+              <p style="margin: 0.5rem 0 1.25rem;">Explore jobs that align with your background and submit your resume.</p>
+              <a href="{% url 'job_list' %}" class="btn btn-primary">Find Jobs</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

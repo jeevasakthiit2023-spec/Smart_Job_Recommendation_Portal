@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Create Account | Smart Job Recommendation Portal{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <div class="form-card">
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div class="brand-icon" style="margin: 0 auto 1rem; width: 48px; height: 48px; font-size: 1.3rem;">
+        <i class="fa-solid fa-user-plus"></i>
+      </div>
+      <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--navy-900);">Join SmartJob Portal</h1>
+      <p style="color: var(--slate-600); font-size: 0.95rem; margin-top: 0.25rem;">Choose your account type and unlock algorithmic matching.</p>
+    </div>
+
+    <form method="post" action="{% url 'register' %}" novalidate>
+      {% csrf_token %}
+
+      <!-- Account Role Radio -->
+      <div class="form-group" style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: var(--radius-md); padding: 1rem;">
+        <label style="font-size: 0.95rem; margin-bottom: 0.6rem; color: var(--navy-900);">Select Your Role</label>
+        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+          {% for radio in form.role %}
+            <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-weight: normal; font-size: 0.92rem;">
+              {{ radio.tag }} {{ radio.choice_label }}
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="id_full_name">Full Legal Name</label>
+        {{ form.full_name }}
+        {% if form.full_name.errors %}
+          <div class="form-errors">{{ form.full_name.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group" id="companyNameGroup">
+        <label for="id_company_name">Company / Organization Name <span style="font-size: 0.8rem; color: var(--slate-400);">(Recruiters only)</span></label>
+        {{ form.company_name }}
+        {% if form.company_name.errors %}
+          <div class="form-errors">{{ form.company_name.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="id_username">Username</label>
+        {{ form.username }}
+        {% if form.username.errors %}
+          <div class="form-errors">{{ form.username.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="id_email">Email Address</label>
+        {{ form.email }}
+        {% if form.email.errors %}
+          <div class="form-errors">{{ form.email.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label for="id_password">Password</label>
+          {{ form.password }}
+          {% if form.password.errors %}
+            <div class="form-errors">{{ form.password.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="id_confirm_password">Confirm Password</label>
+          {{ form.confirm_password }}
+          {% if form.confirm_password.errors %}
+            <div class="form-errors">{{ form.confirm_password.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 1rem;">
+        <i class="fa-solid fa-arrow-right-to-bracket"></i> Create My Account
+      </button>
+    </form>
+
+    <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--slate-200); text-align: center; font-size: 0.9rem; color: var(--slate-600);">
+      Already have an account? 
+      <a href="{% url 'login' %}" style="font-weight: 700; color: var(--teal-600);">Sign In here</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

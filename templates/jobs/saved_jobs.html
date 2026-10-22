@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Saved Jobs | SmartJob{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <div class="section-header">
+    <div>
+      <h1 class="section-title">Saved Job Vacancies</h1>
+      <p class="section-subtitle">Review roles you have bookmarked for later consideration</p>
+    </div>
+    <a href="{% url 'job_list' %}" class="btn btn-outline">
+      <i class="fa-solid fa-magnifying-glass"></i> Browse More Openings
+    </a>
+  </div>
+
+  <div class="job-grid">
+    {% for record in saved_records %}
+      <div class="job-card">
+        <div class="job-card-header">
+          <div>
+            <h2 class="job-title"><a href="{% url 'job_detail' record.job.id %}">{{ record.job.job_title }}</a></h2>
+            <div class="company-name"><i class="fa-regular fa-building"></i> {{ record.job.company_name }}</div>
+          </div>
+          <a href="{% url 'toggle_save_job' record.job.id %}" class="btn btn-outline btn-sm" title="Remove bookmark">
+            <i class="fa-solid fa-bookmark" style="color: var(--teal-600);"></i>
+          </a>
+        </div>
+
+        <div class="job-meta-row">
+          <span class="job-meta-item"><i class="fa-solid fa-location-dot"></i> {{ record.job.location }}</span>
+          <span class="job-meta-item"><i class="fa-solid fa-clock"></i> {{ record.job.get_job_type_display }}</span>
+          <span class="job-meta-item"><i class="fa-regular fa-calendar"></i> Saved: {{ record.saved_at|date:"M d, Y" }}</span>
+        </div>
+
+        <div class="skills-tags">
+          {% for skill in record.job.get_skills_list|slice:":4" %}
+            <span class="skill-tag">{{ skill }}</span>
+          {% endfor %}
+        </div>
+
+        <div class="job-card-footer">
+          <div class="salary-tag">${{ record.job.min_salary|floatformat:0 }} - ${{ record.job.max_salary|floatformat:0 }}</div>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            {% if record.job.id in applied_job_ids %}
+              <span class="badge badge-status-selected"><i class="fa-solid fa-check"></i> Applied</span>
+            {% else %}
+              <a href="{% url 'apply_job' record.job.id %}" class="btn btn-primary btn-sm">Apply Now</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="empty-state" style="grid-column: 1 / -1;">
+        <div class="empty-state-icon"><i class="fa-regular fa-bookmark"></i></div>
+        <h3 class="empty-state-title">No Saved Jobs Yet</h3>
+        <p class="empty-state-desc">While browsing listings, click the bookmark icon on any card to save it here for quick access.</p>
+        <a href="{% url 'job_list' %}" class="btn btn-primary">Explore Active Listings</a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
