@@ -1,0 +1,2 @@
+# Ensure build scripts retain LF endings on Linux
+*.sh text eol=lf
